@@ -1,28 +1,133 @@
-[localhost.postman_collection.json](https://github.com/user-attachments/files/22118302/localhost.postman_collection.json)
-{
-	"info": {
-		"_postman_id": "6700384d-53d5-4409-969f-5e7c120a1247",
-		"name": "localhost",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "47953401",
-		"_collection_link": "https://maulina-tyas-s-team.postman.co/workspace/Team-Workspace~a11f88ef-3f62-445e-833b-ee79c62c61b3/collection/47953401-6700384d-53d5-4409-969f-5e7c120a1247?action=share&source=collection_link&creator=47953401"
-	},
-	"item": [
-		{
-			"name": "movies",
-			"request": {
-				"method": "GET",
-				"header": []
-			},
-			"response": []
-		},
-		{
-			"name": "directors",
-			"request": {
-				"method": "GET",
-				"header": []
-			},
-			"response": []
-		}
-	]
+//movie
+const express = require('express');
+const app = express();
+const port = 3100;
+let idSeq = 4;
+
+app.use(express.json());
+let movies = [
+    {id: 1, title: 'Inception', director: 'Christopher Nolan', year: 2010},
+    {id: 2, title: 'The Matrix', director: 'The Wachowskis', year: 1999},
+    {id: 3, title: 'Interstellar', director: 'Christopher Nolan', year: 2014}
+];
+
+app.get('/', (req, res) => {
+  res.send('selamat datang dibelajar API Film!');
+});
+
+app.get('/movies', (req, res) => {
+  res.json(movies);
+});
+app.get('/movies/:id', (req, res) => {
+const id = Number(req.params.id);
+const movie = movies.find(m => m.id === id);
+ if (!movie) return res.status(404).json({ error: 'Movie tidak,,→ ditemukan' });
+res.json(movie);
+ });
+
+app.get('/movies/title/:title', (req, res) => {
+    const name = req.params.title.toLowerCase();
+    const movie = movies.find(m => m.title.toLowerCase() === name);
+    if (movie) {
+        res.json(movie);
+    } else {
+        res.status(404).send('Movie not found');
+    }
+});
+
+
+app.post('/movies',(req,res)=>{
+const {title,director, year}=req.body||{};
+if(!title||!director||!year){
+returnres.status(400).json({error:'title,director,year →wajibdiisi'});
 }
+const newMovie={id:idSeq++,title,director,year};
+movies.push(newMovie);
+res.status(201).json(newMovie);
+});
+
+app.put('/movies/:id', (req, res) => {
+    const id = Number(req.params.id);
+    const movieIndex = movies.findIndex(m => m.id === id);
+    if (movieIndex === -1) {
+    return res.status(404).json({ error: 'Movie tidak ditemukan' });
+ }
+    const { title, director, year } = req.body || {};
+    const updatedMovie = { id, title, director, year };
+    movies[movieIndex] = updatedMovie;
+    res.json(updatedMovie);
+ });
+
+app.delete('/movies/:id', (req, res) => {
+const id = Number(req.params.id);
+const movieIndex = movies.findIndex(m => m.id === id);
+if (movieIndex === -1) {
+return res.status(404).json({ error: 'Movie tidak ditemukan',});
+}
+movies.splice(movieIndex, 1);
+res.status(204).send();
+});
+
+
+//diretors
+
+let directors = [
+    {id: 1, name: 'maulina', birthyear: 2005},
+    {id: 2, name: 'laylia', birthyear: 1995},
+    {id: 3, name: 'cindy', birthyear : 2004}
+];
+app.get('/', (req, res) => {
+  res.send('selamat datang di profil !');
+});
+app.get('/directors', (req, res) => {
+  res.json(directors);
+});
+
+app.get('/directors/:id', (req, res) => {
+const id = Number(req.params.id);
+const director = directors.find(m => m.id === id);
+ if (!director) return res.status(404).json({ error: 'profil tidak ditemukan' });
+res.json(directors);
+ });
+
+app.post('/directors', (req, res) => {
+    const { name, birthYear } = req.body || {};
+    if ( !name || !birthYear) {
+     return res.status(400).json({ error: 'name , birthyear wajib diisi' });
+    }
+    const newDirectors = { id: idSeq++, name, birthYear };
+    directors.push(newDirectors);
+    res.status(201).json(newDirectors);
+});
+
+app.put('/directors/:id', (req, res) => {
+    const id = Number(req.params.id);
+    const directorsIndex = directors.findIndex(m => m.id === id);
+    if (directorsIndex === -1) {
+    return res.status(404).json({ error: 'Data tidak ditemukan' });
+ }
+    const { name, birthYear } = req.body || {};
+    const updatedDirectors = { id, name, birthYear};
+    directors[directorsIndex] = updatedDirectors;
+    res.json(updatedDirectors);
+ });
+
+app.delete('/directors/:id', (req, res) => {
+const id = Number(req.params.id);
+const directorsIndex = directors.findIndex(m => m.id === id);
+if (directorsIndex === -1) {
+return res.status(404).json({ error: 'Data tidak ditemukan',});
+}
+directors.splice(directorsIndex, 1);
+res.status(204).send();
+});
+
+app.use((err, req, res, _next) => {
+ console.error('[ERROR]', err);
+ res.status(500).json({ error: 'Terjadi kesalahan pada server' });
+});
+
+
+app.listen(port, () => {
+    console.log(`Server berjalan di http://localhost:${port}`);
+});
